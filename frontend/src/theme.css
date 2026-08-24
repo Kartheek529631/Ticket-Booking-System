@@ -1,0 +1,208 @@
+/*
+  MARQUEE — design tokens
+  Subject: a night-time cinema/concert box office. The signature element is
+  the seat map itself, lit like a marquee — available seats glow gold,
+  held seats pulse amber, booked seats go quiet maroon.
+
+  Color:
+    --ink        #0F1117   near-black backdrop (the auditorium)
+    --panel      #191C26   card/panel surface
+    --panel-2    #22273A   raised surface / inputs
+    --gold       #E8B23D   marquee bulb gold — primary accent, available seats
+    --gold-dim   #8A6B2A   muted gold for secondary text on dark
+    --amber      #F2994A   held / pending state
+    --maroon     #7A2E3B   booked / sold seat, cancel danger
+    --teal       #3FA796   confirmations / success
+    --paper      #F4F1EA   light text on dark surfaces
+    --muted      #9498A8   secondary text
+
+  Type:
+    display: 'Bebas Neue' — marquee lettering, used sparingly for headings
+    body/UI: 'Inter'      — everything else
+*/
+
+:root {
+  --ink: #0f1117;
+  --panel: #191c26;
+  --panel-2: #22273a;
+  --gold: #e8b23d;
+  --gold-dim: #8a6b2a;
+  --amber: #f2994a;
+  --maroon: #7a2e3b;
+  --maroon-bright: #c14a5e;
+  --teal: #3fa796;
+  --paper: #f4f1ea;
+  --muted: #9498a8;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at top, #1a1e2b 0%, var(--ink) 60%);
+  color: var(--paper);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.display {
+  font-family: 'Bebas Neue', 'Inter', sans-serif;
+  letter-spacing: 0.04em;
+}
+
+a { color: var(--gold); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius);
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: transform 0.08s ease, opacity 0.15s ease;
+}
+button:active { transform: translateY(1px); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--gold); color: #1a1508; }
+.btn-primary:hover:not(:disabled) { background: #f2c25e; }
+
+.btn-secondary { background: var(--panel-2); color: var(--paper); border: 1px solid #333a52; }
+.btn-secondary:hover:not(:disabled) { background: #2a3049; }
+
+.btn-danger { background: var(--maroon); color: var(--paper); }
+.btn-danger:hover:not(:disabled) { background: var(--maroon-bright); }
+
+.btn-block { width: 100%; }
+
+input, select, textarea {
+  background: var(--panel-2);
+  border: 1px solid #333a52;
+  color: var(--paper);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; }
+.field { margin-bottom: 14px; }
+
+.container { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+
+.navbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0; border-bottom: 1px solid #262b3d;
+}
+.brand {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+.brand span { color: var(--paper); }
+.navlinks { display: flex; gap: 18px; align-items: center; font-size: 14px; }
+.navlinks a, .navlinks button.linklike {
+  color: var(--muted); background: none; padding: 0; font-weight: 500;
+}
+.navlinks a:hover, .navlinks button.linklike:hover { color: var(--paper); text-decoration: none; }
+.pill {
+  background: var(--panel-2); border: 1px solid #333a52; border-radius: 999px;
+  padding: 4px 12px; font-size: 12px; color: var(--gold);
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid #262b3d;
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; margin-top: 20px; }
+.event-card { display: flex; flex-direction: column; gap: 10px; }
+.event-card .type-badge {
+  align-self: flex-start; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink); background: var(--gold); padding: 3px 8px; border-radius: 4px; font-weight: 700;
+}
+.event-card h3 { margin: 0; font-size: 20px; }
+.event-card .meta { color: var(--muted); font-size: 13px; }
+
+.filters { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.filters > * { min-width: 160px; }
+
+/* --- Seat map: the signature element --- */
+.screen-arc {
+  width: 70%; margin: 0 auto 34px; height: 10px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  border-radius: 50%;
+  box-shadow: 0 -18px 40px 6px rgba(232, 178, 61, 0.25);
+}
+.screen-label { text-align: center; color: var(--gold-dim); font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 6px; }
+
+.seat-map { display: flex; flex-direction: column; gap: 8px; align-items: center; margin: 20px 0; }
+.seat-row { display: flex; gap: 8px; align-items: center; }
+.row-label { width: 20px; text-align: center; color: var(--muted); font-size: 12px; }
+
+.seat {
+  width: 30px; height: 30px; border-radius: 7px 7px 3px 3px;
+  border: 1px solid #333a52;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 9px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  position: relative;
+}
+.seat.available { border-color: var(--gold-dim); color: var(--gold); }
+.seat.available:hover { background: rgba(232, 178, 61, 0.18); box-shadow: 0 0 10px rgba(232,178,61,0.4); }
+.seat.selected { background: var(--gold); color: #1a1508; border-color: var(--gold); font-weight: 700; }
+.seat.held { background: rgba(242, 153, 74, 0.18); border-color: var(--amber); color: var(--amber); cursor: not-allowed; }
+.seat.booked { background: rgba(122, 46, 59, 0.35); border-color: var(--maroon); color: #d59aa4; cursor: not-allowed; }
+.seat.offered { background: rgba(63, 167, 150, 0.18); border-color: var(--teal); color: var(--teal); cursor: not-allowed; }
+
+.legend { display: flex; gap: 18px; justify-content: center; margin-top: 10px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+.legend .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+.checkout-bar {
+  position: sticky; bottom: 0; margin-top: 24px; padding: 16px 20px;
+  background: var(--panel); border: 1px solid #262b3d; border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.timer { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--amber); letter-spacing: 0.05em; }
+
+.badge-status { font-size: 11px; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+.badge-status.CONFIRMED { background: rgba(63,167,150,0.18); color: var(--teal); }
+.badge-status.CANCELLED { background: rgba(122,46,59,0.3); color: #d59aa4; }
+
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th, .table td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #262b3d; }
+.table th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+
+.stat-row { display: flex; gap: 16px; flex-wrap: wrap; margin: 16px 0; }
+.stat { background: var(--panel-2); border-radius: var(--radius); padding: 14px 18px; min-width: 140px; }
+.stat .num { font-family: 'Bebas Neue', sans-serif; font-size: 30px; color: var(--gold); }
+.stat .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+.alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 14px; }
+.alert.error { background: rgba(122,46,59,0.25); color: #f0b7bf; border: 1px solid var(--maroon); }
+.alert.success { background: rgba(63,167,150,0.2); color: #bdeee5; border: 1px solid var(--teal); }
+.alert.info { background: rgba(232,178,61,0.12); color: var(--gold); border: 1px solid var(--gold-dim); }
+
+.center-page { min-height: 80vh; display: flex; align-items: center; justify-content: center; }
+.auth-card { width: 380px; }
+.auth-card h2 { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 0.05em; color: var(--gold); margin-top: 0; }
+
+.muted { color: var(--muted); }
+.section-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 0.04em; color: var(--paper); margin: 28px 0 4px; }
+
+.row-def { display: grid; grid-template-columns: 1fr 2fr 1fr auto; gap: 8px; margin-bottom: 8px; align-items: end; }
