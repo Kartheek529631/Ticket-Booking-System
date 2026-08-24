@@ -1,0 +1,176 @@
+// Ticket Booking System — Prisma schema
+// Default datasource is SQLite for zero-config local setup.
+// For production, switch provider to "postgresql" and set DATABASE_URL
+// (see README "Switching to PostgreSQL").
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ORGANISER
+  ADMIN
+}
+
+enum EventType {
+  MOVIE
+  CONCERT
+}
+
+enum SeatStatus {
+  AVAILABLE
+  HELD
+  BOOKED
+  OFFERED // reserved for a specific waitlisted customer, time-limited
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+enum WaitlistStatus {
+  WAITING
+  OFFERED
+  EXPIRED
+  CONVERTED
+  CANCELLED
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  role      Role      @default(CUSTOMER)
+  createdAt DateTime  @default(now())
+
+  venues    Venue[]     @relation("AdminVenues")
+  events    Event[]     @relation("OrganiserEvents")
+  bookings  Booking[]
+  waitlists Waitlist[]
+  heldSeats EventSeat[] @relation("HeldBy")
+}
+
+model Venue {
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String
+  adminId   Int
+  admin     User     @relation("AdminVenues", fields: [adminId], references: [id])
+  seats     Seat[]
+  events    Event[]
+  createdAt DateTime @default(now())
+}
+
+// A physical seat that belongs to a venue's fixed layout.
+model Seat {
+  id       Int    @id @default(autoincrement())
+  venueId  Int
+  venue    Venue  @relation(fields: [venueId], references: [id])
+  row      String
+  number   Int
+  label    String // e.g. "A1"
+  category String // e.g. "Premium" | "Standard"
+
+  eventSeats EventSeat[]
+
+  @@unique([venueId, row, number])
+}
+
+// An event/show listing (a specific movie screening or concert).
+model Event {
+  id          Int       @id @default(autoincrement())
+  title       String
+  type        EventType
+  description String?
+  organiserId Int
+  organiser   User      @relation("OrganiserEvents", fields: [organiserId], references: [id])
+  venueId     Int
+  venue       Venue     @relation(fields: [venueId], references: [id])
+  date        DateTime
+  createdAt   DateTime  @default(now())
+
+  pricing    EventPricing[]
+  eventSeats EventSeat[]
+  bookings   Booking[]
+  waitlists  Waitlist[]
+}
+
+// Per-category price for a given event.
+model EventPricing {
+  id       Int    @id @default(autoincrement())
+  eventId  Int
+  event    Event  @relation(fields: [eventId], references: [id])
+  category String
+  price    Float
+
+  @@unique([eventId, category])
+}
+
+// The live status of one physical seat for one specific event/show.
+// This is the row concurrency control operates on.
+model EventSeat {
+  id            Int        @id @default(autoincrement())
+  eventId       Int
+  event         Event      @relation(fields: [eventId], references: [id])
+  seatId        Int
+  seat          Seat       @relation(fields: [seatId], references: [id])
+  status        SeatStatus @default(AVAILABLE)
+  heldByUserId  Int?
+  heldBy        User?      @relation("HeldBy", fields: [heldByUserId], references: [id])
+  holdExpiresAt DateTime? // used for both HELD (customer checkout TTL) and OFFERED (waitlist offer TTL)
+  version       Int        @default(0) // optimistic concurrency counter
+
+  bookingSeats BookingSeat[]
+
+  @@unique([eventId, seatId])
+}
+
+model Booking {
+  id            Int           @id @default(autoincrement())
+  bookingRef    String        @unique
+  userId        Int
+  user          User          @relation(fields: [userId], references: [id])
+  eventId       Int
+  event         Event         @relation(fields: [eventId], references: [id])
+  totalAmount   Float
+  status        BookingStatus @default(CONFIRMED)
+  qrCodeDataUrl String? // base64 data URL, also emailed as an attachment
+  createdAt     DateTime      @default(now())
+  cancelledAt   DateTime?
+
+  seats BookingSeat[]
+}
+
+model BookingSeat {
+  id          Int       @id @default(autoincrement())
+  bookingId   Int
+  booking     Booking   @relation(fields: [bookingId], references: [id])
+  eventSeatId Int
+  eventSeat   EventSeat @relation(fields: [eventSeatId], references: [id])
+  price       Float
+}
+
+// FIFO queue of customers waiting for a sold-out category on an event.
+model Waitlist {
+  id                 Int            @id @default(autoincrement())
+  eventId            Int
+  event              Event          @relation(fields: [eventId], references: [id])
+  userId             Int
+  user               User           @relation(fields: [userId], references: [id])
+  category           String
+  status             WaitlistStatus @default(WAITING)
+  offeredEventSeatId Int?
+  offerExpiresAt     DateTime?
+  createdAt          DateTime       @default(now())
+  respondedAt        DateTime?
+
+  @@index([eventId, category, status, createdAt])
+}
